@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace scs
 {
@@ -10,6 +6,15 @@ namespace scs
     {
         static void Main(string[] args)
         {
+#if DEBUG
+            Console.Error.WriteLine("#END");
+            Console.ReadKey(true);
+#endif
+        }
+
+        public static void Help()
+        {
+            Console.Error.WriteLine("scs /nosig [/c <output>] <script> [script params]");
         }
     }
 }

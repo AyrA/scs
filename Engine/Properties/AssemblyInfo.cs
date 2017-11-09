@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("scs")]
+[assembly: AssemblyTitle("Engine")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("AyrA")]
-[assembly: AssemblyProduct("scs")]
+[assembly: AssemblyProduct("Engine")]
 [assembly: AssemblyCopyright("Copyright © AyrA 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("2a2ce9b9-7964-4e3e-95e3-f3c210b59847")]
+[assembly: Guid("36bd145d-7e1b-44f8-889d-ea6e206c985b")]
 
 // Version information for an assembly consists of the following four values:
 //
