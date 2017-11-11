@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("scs")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("C# scripting Engine")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("AyrA")]
 [assembly: AssemblyProduct("scs")]
