@@ -48,7 +48,12 @@ namespace scs
 
         public static void Help()
         {
-            Console.Error.WriteLine("scs [/c <output>] <script> [script params]");
+            Console.Error.WriteLine(@"scs [/c <filename>] <script> [script params]
+C# Scripting Engine
+
+/c filename    - Compile Script file into Binary instead of executing it.
+script         - Script File/Binary to execute
+script params  - Paramters passed on to the script. Ignored when /c i used.");
         }
     }
 }
