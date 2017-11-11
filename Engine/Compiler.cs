@@ -2,10 +2,8 @@
 using System.IO;
 using Microsoft.CSharp;
 using System.Reflection;
-using System.Diagnostics;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System;
 
 namespace scs
