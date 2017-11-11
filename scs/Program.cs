@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace scs
 {
@@ -20,10 +21,19 @@ namespace scs
                     Console.Error.WriteLine(e);
                 }
             }
+            catch (IOException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine("IO Exception: {0}", ex.Message);
+            }
             catch (DependencyException ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.Error.WriteLine("{1}:[{0}] {2}", ex.LineNumber, ex.FileName, ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.Error.WriteLine(ex.InnerException.Message);
+                }
             }
             catch (Exception ex)
             {

@@ -107,16 +107,16 @@ namespace scs
                                             }
                                             else
                                             {
-                                                throw new DependencyException(LineNum, SourceFileName, "Files used in #include must use complex mode");
+                                                throw new DependencyException(LineNum, SourceFileName, $"Files used in #include must use complex mode. Use '#mode complex' in {FileName} to fix this");
                                             }
                                             break;
                                         default:
-                                            throw new DependencyException(LineNum, SourceFileName, "Error processing # include statement: The referenced file '{FileName}' is not a valid Script Binary");
+                                            throw new DependencyException(LineNum, SourceFileName, $"Error processing #include statement: The referenced file '{FileName}' is not a valid Binary");
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    throw new DependencyException(LineNum, SourceFileName, "Error processing #include Statement", ex);
+                                    throw new DependencyException(LineNum, SourceFileName, "Error processing #include Statement: Unexpected error", ex);
                                 }
                                 break;
                             case LINE_REF:
