@@ -18,10 +18,11 @@ namespace scs
         public const string LINE_REF = "//#ref";
         public const string LINE_INCLUDE = "//#include";
 
+
         /// <summary>
         /// Default Script Mode
         /// </summary>
-        public const ScriptMode DEFAULT_MODE = ScriptMode.Single;
+        private const ScriptMode DEFAULT_MODE = ScriptMode.Single;
 
         /// <summary>
         /// Recursively Resolves Dependencies from a Source File
@@ -399,64 +400,70 @@ namespace scs
             }
             return int.MinValue;
         }
-    }
 
-    public enum ScriptMode : int
-    {
         /// <summary>
-        /// No Mode Specified or mode not applicable because script is not a source file
+        /// Script Modes
         /// </summary>
-        __None = 0,
-        /// <summary>
-        /// Script is the Contents of "Main(string[] args){...}"
-        /// </summary>
-        Single = 1,
-        /// <summary>
-        /// Script is the Contents of a Class with a "Main" provided
-        /// </summary>
-        Simple = 2,
-        /// <summary>
-        /// Script is a complete Class with a "Main" provided
-        /// </summary>
-        Complex = 3
-    }
+        private enum ScriptMode : int
+        {
+            /// <summary>
+            /// No Mode Specified or mode not applicable because script is not a source file
+            /// </summary>
+            __None = 0,
+            /// <summary>
+            /// Script is the Contents of "Main(string[] args){...}"
+            /// </summary>
+            Single = 1,
+            /// <summary>
+            /// Script is the Contents of a Class with a "Main" provided
+            /// </summary>
+            Simple = 2,
+            /// <summary>
+            /// Script is a complete Class with a "Main" provided
+            /// </summary>
+            Complex = 3
+        }
 
-    /// <summary>
-    /// Represents a Script Dependency
-    /// </summary>
-    public struct ScriptDependency
-    {
         /// <summary>
-        /// Dependency Type
+        /// Represents a Script Dependency
         /// </summary>
-        public ScriptDependencyType Type;
-        /// <summary>
-        /// Full Script Path
-        /// </summary>
-        public string Path;
-    }
+        private struct ScriptDependency
+        {
+            /// <summary>
+            /// Dependency Type
+            /// </summary>
+            public ScriptDependencyType Type;
+            /// <summary>
+            /// Full Script Path
+            /// </summary>
+            public string Path;
+        }
 
-    public enum ScriptDependencyType : int
-    {
         /// <summary>
-        /// Unknown Reference Type
+        /// Represents a Script Dependency Type for the compiler
         /// </summary>
-        Unknown = 0,
-        /// <summary>
-        /// .NET Library
-        /// </summary>
-        Library = 1,
-        /// <summary>
-        /// Script Source File
-        /// </summary>
-        ScriptFile = 2,
-        /// <summary>
-        /// Compiled Script
-        /// </summary>
-        ScriptBinary = 3,
-        /// <summary>
-        /// Invalid Type
-        /// </summary>
-        Invalid = int.MaxValue
+        private enum ScriptDependencyType : int
+        {
+            /// <summary>
+            /// Unknown Reference Type
+            /// </summary>
+            Unknown = 0,
+            /// <summary>
+            /// .NET Library
+            /// </summary>
+            Library = 1,
+            /// <summary>
+            /// Script Source File
+            /// </summary>
+            ScriptFile = 2,
+            /// <summary>
+            /// Compiled Script
+            /// </summary>
+            ScriptBinary = 3,
+            /// <summary>
+            /// Invalid Type
+            /// </summary>
+            Invalid = int.MaxValue
+        }
     }
 }
