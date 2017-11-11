@@ -9,18 +9,6 @@ namespace scs
 #if DEBUG
             try
             {
-                /*
-                var Messages = Compiler.Compile(@"C:\temp\test.cs", @"C:\temp\test.dll");
-                if (Messages.Length > 0)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.Error.WriteLine("Got {0} Warnings", Messages.Length);
-                    foreach (var M in Messages)
-                    {
-                        Console.Error.WriteLine(new CompilerException(M));
-                    }
-                }
-                //*/
                 Compiler.Run(@"C:\temp\test.cs", args);
             }
             catch (AggregateException ex)
@@ -31,6 +19,11 @@ namespace scs
                 {
                     Console.Error.WriteLine(e);
                 }
+            }
+            catch (DependencyException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine("{1}:[{0}] {2}", ex.LineNumber, ex.FileName, ex.Message);
             }
             catch (Exception ex)
             {
@@ -45,7 +38,7 @@ namespace scs
 
         public static void Help()
         {
-            Console.Error.WriteLine("scs /nosig [/c <output>] <script> [script params]");
+            Console.Error.WriteLine("scs [/c <output>] <script> [script params]");
         }
     }
 }

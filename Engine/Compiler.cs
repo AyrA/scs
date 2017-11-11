@@ -58,16 +58,16 @@ namespace scs
                 if (!string.IsNullOrEmpty(Line))
                 {
                     var Command = Line.Substring(0, Line.IndexOf(' ')).Trim().ToLower();
-                    var FileName = Line.Substring(Line.IndexOf(' ') + 1).Trim();
+                    var BaseFileName = Line.Substring(Line.IndexOf(' ') + 1).Trim();
                     //The File name must be a quoted string
                     if (
                         //Custom Includes
-                        (FileName.StartsWith("\"") && FileName.EndsWith("\"")) ||
+                        (BaseFileName.StartsWith("\"") && BaseFileName.EndsWith("\"")) ||
                         //System Defined Includes
-                        (FileName.StartsWith("<") && FileName.EndsWith(">")))
+                        (BaseFileName.StartsWith("<") && BaseFileName.EndsWith(">")))
                     {
                         //Make Absolute Path
-                        FileName = Tools.GetFullName(Path.Combine(FileName.StartsWith("<") ? Tools.ReferencePath : Path.GetDirectoryName(SourceFileName), FileName.Substring(1, FileName.Length - 2)));
+                        var FileName = Tools.GetFullName(Path.Combine(BaseFileName.StartsWith("<") ? Tools.ReferencePath : Path.GetDirectoryName(SourceFileName), BaseFileName.Substring(1, BaseFileName.Length - 2)));
 
                         switch (Command)
                         {
@@ -124,7 +124,8 @@ namespace scs
                                 {
                                     ExistingDependencies.Add(new ScriptDependency()
                                     {
-                                        Path = FileName,
+                                        //References work without a Path
+                                        Path = BaseFileName.Substring(1, BaseFileName.Length - 2),
                                         Type = ScriptDependencyType.Library
                                     });
                                 }
@@ -133,6 +134,10 @@ namespace scs
                                 //Stop Processing References and Includes once we get an unsupported Line.
                                 return;
                         }
+                    }
+                    else if (Command == LINE_REF || Command == LINE_INCLUDE)
+                    {
+                        throw new DependencyException(LineNum, SourceFileName, "Invalid Include or Reference Line. Missing quotes?");
                     }
                 }
             }
@@ -155,12 +160,12 @@ namespace scs
                     //Don't do anything on Complex mode
                     break;
                 case ScriptMode.Simple:
-                    Lines[Headers.Length] = $"public static class {GetIdentifier()}" + "{" + Lines[Headers.Length];
-                    Lines[Lines.Length - 1] += "}";
+                    Lines[Headers.Length] = $"public static class {GetIdentifier()}" + "{\r\n" + Lines[Headers.Length];
+                    Lines[Lines.Length - 1] += "\r\n}";
                     break;
                 case ScriptMode.Single:
-                    Lines[Headers.Length] = $"public static class {GetIdentifier()}" + "{public static int Main(string[] args){" + Lines[Headers.Length];
-                    Lines[Lines.Length - 1] += "}}";
+                    Lines[Headers.Length] = $"public static class {GetIdentifier()}" + "{public static int Main(string[] args){\r\n" + Lines[Headers.Length];
+                    Lines[Lines.Length - 1] += "\r\n}}";
                     break;
                 default:
                     throw new Exception("Invalid Script Mode");
@@ -290,7 +295,7 @@ namespace scs
             {
                 File.WriteAllText(Handler.TempName, NormalizeScript(ScriptFile));
                 var Refs = Deps
-                    .Where(m => m.Type == ScriptDependencyType.ScriptBinary)
+                    .Where(m => m.Type == ScriptDependencyType.ScriptBinary || m.Type == ScriptDependencyType.Library)
                     .Concat(Deps.Where(m => m.Type == ScriptDependencyType.Library))
                     .Select(m => m.Path)
                     .ToArray();
@@ -394,7 +399,6 @@ namespace scs
             }
             return int.MinValue;
         }
-
     }
 
     public enum ScriptMode : int
@@ -417,9 +421,18 @@ namespace scs
         Complex = 3
     }
 
+    /// <summary>
+    /// Represents a Script Dependency
+    /// </summary>
     public struct ScriptDependency
     {
+        /// <summary>
+        /// Dependency Type
+        /// </summary>
         public ScriptDependencyType Type;
+        /// <summary>
+        /// Full Script Path
+        /// </summary>
         public string Path;
     }
 
