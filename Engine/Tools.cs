@@ -11,6 +11,17 @@ namespace scs
         private static string _Engine;
 
         /// <summary>
+        /// Gets the Path for Global Includes
+        /// </summary>
+        public static string ReferencePath
+        {
+            get
+            {
+                return Path.Combine(EnginePath, "Lib");
+            }
+        }
+
+        /// <summary>
         /// Gets the Path of the Engine
         /// </summary>
         public static string EnginePath
