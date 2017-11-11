@@ -17,7 +17,7 @@ namespace scs
         public const string LINE_MODE = "//#mode";
         public const string LINE_REF = "//#ref";
         public const string LINE_INCLUDE = "//#include";
-
+        public const string LINE_VERSION = "//#version";
 
         /// <summary>
         /// Default Script Mode
@@ -72,6 +72,9 @@ namespace scs
 
                         switch (Command)
                         {
+                            case LINE_VERSION:
+                                //This is here for forward compatibility
+                                throw new DependencyException(LineNum, SourceFileName, "#version is not supported in this compiler. Check the current script documentation if you need an update.");
                             case LINE_MODE:
                                 //This line is ignored when processing References
                                 break;
