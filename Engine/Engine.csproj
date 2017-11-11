@@ -40,7 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompilerException.cs" />
     <Compile Include="DependencyException.cs" />
+    <Compile Include="TempFileHandler.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

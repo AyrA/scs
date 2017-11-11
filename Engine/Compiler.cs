@@ -12,12 +12,23 @@ namespace scs
 {
     public static class Compiler
     {
+        private static Random R = new Random();
+
+        public const string LINE_MODE = "//#mode";
+        public const string LINE_REF = "//#ref";
+        public const string LINE_INCLUDE = "//#include";
+
+        /// <summary>
+        /// Default Script Mode
+        /// </summary>
+        public const ScriptMode DEFAULT_MODE = ScriptMode.Single;
+
         /// <summary>
         /// Recursively Resolves Dependencies from a Source File
         /// </summary>
         /// <param name="SourceFileName">Source File Name</param>
         /// <returns>List of Dependencies</returns>
-        public static ScriptDependency[] ResolveDependencies(string SourceFileName)
+        private static ScriptDependency[] ResolveDependencies(string SourceFileName)
         {
             List<ScriptDependency> Dependencies = new List<ScriptDependency>();
             ResolveDependencies(SourceFileName, Dependencies);
@@ -40,30 +51,30 @@ namespace scs
                 throw new IOException($"File '{SourceFileName}' not found");
             }
             int LineNum = 0;
-            foreach (var Line in File.ReadAllLines(SourceFileName).Select(m => m.Trim()))
+            foreach (var Line in GetScriptHeader(SourceFileName))
             {
                 ++LineNum;
                 //Ignore empty Lines and simple comments
-                if (!string.IsNullOrEmpty(Line) && !Line.StartsWith("//"))
+                if (!string.IsNullOrEmpty(Line))
                 {
-                    //The first non-header line stops header processing
-                    if (!Line.Contains(" ") || !Line.StartsWith("#"))
-                    {
-                        return;
-                    }
                     var Command = Line.Substring(0, Line.IndexOf(' ')).Trim().ToLower();
                     var FileName = Line.Substring(Line.IndexOf(' ') + 1).Trim();
                     //The File name must be a quoted string
-                    if (FileName.StartsWith("\"") && Line.EndsWith("\""))
+                    if (
+                        //Custom Includes
+                        (FileName.StartsWith("\"") && FileName.EndsWith("\"")) ||
+                        //System Defined Includes
+                        (FileName.StartsWith("<") && FileName.EndsWith(">")))
                     {
-                        //Remove Quotes
-                        FileName = FileName.Substring(0, FileName.Length - 2);
                         //Make Absolute Path
-                        FileName = Tools.GetFullName(Path.Combine(Path.GetDirectoryName(SourceFileName), FileName));
+                        FileName = Tools.GetFullName(Path.Combine(FileName.StartsWith("<") ? Tools.ReferencePath : Path.GetDirectoryName(SourceFileName), FileName.Substring(1, FileName.Length - 2)));
 
                         switch (Command)
                         {
-                            case "#include":
+                            case LINE_MODE:
+                                //This line is ignored when processing References
+                                break;
+                            case LINE_INCLUDE:
                                 try
                                 {
                                     switch (GetScriptType(FileName))
@@ -80,16 +91,23 @@ namespace scs
                                             }
                                             break;
                                         case ScriptDependencyType.ScriptFile:
-                                            //Don't add duplicates
-                                            if (ExistingDependencies.All(m => m.Path != FileName))
+                                            if (GetScriptMode(FileName) == ScriptMode.Complex)
                                             {
-                                                ExistingDependencies.Add(new ScriptDependency()
+                                                //Don't add duplicates
+                                                if (ExistingDependencies.All(m => m.Path != FileName))
                                                 {
-                                                    Path = FileName,
-                                                    Type = ScriptDependencyType.ScriptFile
-                                                });
-                                                //Resolve further Dependencies
-                                                ResolveDependencies(FileName, ExistingDependencies);
+                                                    ExistingDependencies.Add(new ScriptDependency()
+                                                    {
+                                                        Path = FileName,
+                                                        Type = ScriptDependencyType.ScriptFile
+                                                    });
+                                                    //Resolve further Dependencies
+                                                    ResolveDependencies(FileName, ExistingDependencies);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                throw new DependencyException(LineNum, SourceFileName, "Files used in #include must use complex mode");
                                             }
                                             break;
                                         default:
@@ -101,7 +119,7 @@ namespace scs
                                     throw new DependencyException(LineNum, SourceFileName, "Error processing #include Statement", ex);
                                 }
                                 break;
-                            case "#ref":
+                            case LINE_REF:
                                 if (ExistingDependencies.All(m => m.Path != FileName))
                                 {
                                     ExistingDependencies.Add(new ScriptDependency()
@@ -117,8 +135,117 @@ namespace scs
                         }
                     }
                 }
-
             }
+        }
+
+        /// <summary>
+        /// Turns a Script into Complex type
+        /// </summary>
+        /// <param name="SourceFileName">Source file</param>
+        /// <returns>Full Script Content as Complex Type</returns>
+        private static string NormalizeScript(string SourceFileName)
+        {
+            var Mode = GetScriptMode(SourceFileName);
+            var Lines = File.ReadAllLines(SourceFileName);
+            var Headers = GetScriptHeader(SourceFileName);
+
+            switch (Mode)
+            {
+                case ScriptMode.Complex:
+                    //Don't do anything on Complex mode
+                    break;
+                case ScriptMode.Simple:
+                    Lines[Headers.Length] = $"public static class {GetIdentifier()}" + "{" + Lines[Headers.Length];
+                    Lines[Lines.Length - 1] += "}";
+                    break;
+                case ScriptMode.Single:
+                    Lines[Headers.Length] = $"public static class {GetIdentifier()}" + "{public static int Main(string[] args){" + Lines[Headers.Length];
+                    Lines[Lines.Length - 1] += "}}";
+                    break;
+                default:
+                    throw new Exception("Invalid Script Mode");
+            }
+            return string.Join("\r\n", Lines);
+        }
+
+        /// <summary>
+        /// Generates an Identifier
+        /// </summary>
+        /// <returns>Identifier</returns>
+        private static string GetIdentifier()
+        {
+            const string Charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            return new string(Enumerable.Range(1, 10).Select(m => Charset[R.Next(Charset.Length)]).ToArray());
+        }
+
+        /// <summary>
+        /// Gets the Script Headers
+        /// </summary>
+        /// <param name="SourceFileName">Script File</param>
+        /// <returns>Script Header Lines</returns>
+        private static string[] GetScriptHeader(string SourceFileName)
+        {
+            var Lines = new List<string>();
+            if (string.IsNullOrEmpty(SourceFileName))
+            {
+                throw new IOException("Empty File Name");
+            }
+            if (!File.Exists(SourceFileName))
+            {
+                throw new IOException($"File '{SourceFileName}' not found");
+            }
+            foreach (var Line in File.ReadAllLines(SourceFileName).Select(m => m.Trim()))
+            {
+                //The first non-header line stops header processing
+                if (Line.StartsWith("//") || Line == string.Empty || Line.StartsWith("using "))
+                {
+                    Lines.Add(Line);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return Lines.ToArray();
+        }
+
+        /// <summary>
+        /// Gets the Script Mode
+        /// </summary>
+        /// <param name="SourceFile">Script File</param>
+        /// <returns>Script Mode</returns>
+        private static ScriptMode GetScriptMode(string SourceFile)
+        {
+            var Type = ScriptDependencyType.Invalid;
+            try
+            {
+                Type = GetScriptType(SourceFile);
+            }
+            catch
+            {
+                return ScriptMode.__None;
+            }
+            if (Type == ScriptDependencyType.ScriptFile)
+            {
+                foreach (var Line in GetScriptHeader(SourceFile))
+                {
+                    if (Line.StartsWith($"{LINE_MODE} "))
+                    {
+                        switch (Line.Split(' ')[1])
+                        {
+                            case "single":
+                                return ScriptMode.Single;
+                            case "simple":
+                                return ScriptMode.Simple;
+                            case "complex":
+                                return ScriptMode.Complex;
+                            default:
+                                throw new Exception("Invalid Mode Line: " + Line);
+                        }
+                    }
+                }
+            }
+            return DEFAULT_MODE;
         }
 
         /// <summary>
@@ -127,7 +254,7 @@ namespace scs
         /// <remarks>This will not validate if the file is a valid Source or Binary</remarks>
         /// <param name="FileName">File Name</param>
         /// <returns>Script Type</returns>
-        public static ScriptDependencyType GetScriptType(string FileName)
+        private static ScriptDependencyType GetScriptType(string FileName)
         {
             var FI = new FileInfo(FileName);
             if (FI.Exists)
@@ -150,22 +277,144 @@ namespace scs
         }
 
         /// <summary>
+        /// Compiles a script File
+        /// </summary>
+        /// <param name="ScriptFile">Script File</param>
+        /// <param name="OutFile">Output File</param>
+        /// <param name="Optimize">Optimize Code. This makes debugging harder</param>
+        /// <returns>Compiler Errors</returns>
+        public static CompilerError[] Compile(string ScriptFile, string OutFile, bool Optimize = true)
+        {
+            var Deps = ResolveDependencies(ScriptFile);
+            using (var Handler = new TempFileHandler(ScriptFile + ".norm"))
+            {
+                File.WriteAllText(Handler.TempName, NormalizeScript(ScriptFile));
+                var Refs = Deps
+                    .Where(m => m.Type == ScriptDependencyType.ScriptBinary)
+                    .Concat(Deps.Where(m => m.Type == ScriptDependencyType.Library))
+                    .Select(m => m.Path)
+                    .ToArray();
+                var Scripts = (new string[] { Handler.TempName }).Concat(Deps
+                    .Where(m => m.Type == ScriptDependencyType.ScriptFile)
+                    .Select(m => m.Path))
+                    .ToArray();
+                return Compile(Scripts, Refs, OutFile, false);
+            }
+        }
+
+        /// <summary>
         /// Compiles one or many Source Files into a binary Script
         /// </summary>
-        /// <param name="SourceFiles"></param>
-        /// <param name="OutFile"></param>
-        public static void Compile(string[] SourceFiles, string OutFile)
+        /// <param name="SourceFiles">Source Files</param>
+        /// <param name="References">References Assemblies</param>
+        /// <param name="OutFile">Output File</param>
+        /// <param name="Optimize">Optimize Code. This makes debugging harder</param>
+        /// <returns>Compiler Errors</returns>
+        private static CompilerError[] Compile(string[] SourceFiles, string[] References, string OutFile, bool Optimize)
         {
             var codeProvider = new CSharpCodeProvider();
             var compilerParams = new CompilerParameters();
-            compilerParams.CompilerOptions = "/target:library /optimize";
-            compilerParams.GenerateExecutable = false;
+            compilerParams.CompilerOptions = "/target:library" + (Optimize ? " /optimize" : "");
+            compilerParams.GenerateExecutable = true;
             compilerParams.GenerateInMemory = false;
             compilerParams.IncludeDebugInformation = false;
             compilerParams.ReferencedAssemblies.Add("mscorlib.dll");
             compilerParams.ReferencedAssemblies.Add("System.dll");
+            compilerParams.OutputAssembly = OutFile;
+            if (References != null && References.Length > 0)
+            {
+                compilerParams.ReferencedAssemblies.AddRange(References);
+            }
             compilerParams.ReferencedAssemblies.Add(Path.Combine(Tools.EnginePath, "Engine.dll"));
+            var Result = codeProvider.CompileAssemblyFromFile(compilerParams, SourceFiles);
+
+            //Throw exception if there is an Error
+            if (Result.Errors != null && Result.Errors.OfType<CompilerError>().Count(m => !m.IsWarning) > 0)
+            {
+                //Throw combined Compiler Exception
+                throw new AggregateException(Result.Errors.OfType<CompilerError>().Select(m => new CompilerException(m)));
+            }
+            //Return Warnings
+            return Result.Errors.OfType<CompilerError>().ToArray();
         }
+
+        /// <summary>
+        /// Runs a Script file or Assembly
+        /// </summary>
+        /// <param name="ScriptFile">Script file</param>
+        /// <param name="ScriptArguments">Arguments to pass to the script</param>
+        /// <returns>Result Code</returns>
+        public static int Run(string ScriptFile, string[] ScriptArguments = null)
+        {
+            var T = GetScriptType(ScriptFile);
+            Assembly Script;
+            if (T == ScriptDependencyType.ScriptFile)
+            {
+                using (var TFH = new TempFileHandler())
+                {
+                    Compile(ScriptFile, TFH.TempName);
+                    Script = Assembly.LoadFile(TFH.TempName);
+                }
+            }
+            else
+            {
+                Script = Assembly.LoadFile(ScriptFile);
+            }
+
+            foreach (var AssemblyType in Script.GetTypes())
+            {
+                //Only support classes
+                if (AssemblyType.IsClass)
+                {
+                    //Find a static "Main" Method
+                    var M = AssemblyType.GetMethod("Main", BindingFlags.Static | BindingFlags.Public);
+                    if (M != null)
+                    {
+                        //Get Parameter Number
+                        var Params = M.GetParameters();
+                        if (Params.Length < 2)
+                        {
+                            //Run Method only if no parameters are needed or a single string array is needed.
+                            if (Params.Length == 0 || Params[0].ParameterType == typeof(string[]))
+                            {
+                                //Run according to return type
+                                if (M.ReturnType == typeof(int))
+                                {
+                                    return (int)M.Invoke(null, Params.Length == 0 ? null : new object[] { ScriptArguments });
+                                }
+                                else
+                                {
+                                    M.Invoke(null, Params.Length == 0 ? null : new object[] { ScriptArguments });
+                                    return 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return int.MinValue;
+        }
+
+    }
+
+    public enum ScriptMode : int
+    {
+        /// <summary>
+        /// No Mode Specified or mode not applicable because script is not a source file
+        /// </summary>
+        __None = 0,
+        /// <summary>
+        /// Script is the Contents of "Main(string[] argc){...}"
+        /// </summary>
+        Single = 1,
+        /// <summary>
+        /// Script is the Contents of a Class with a "Main" provided
+        /// </summary>
+        Simple = 2,
+        /// <summary>
+        /// Script is a complete Class with a "Main" provided
+        /// </summary>
+        Complex = 3
     }
 
     public struct ScriptDependency
@@ -176,10 +425,25 @@ namespace scs
 
     public enum ScriptDependencyType : int
     {
+        /// <summary>
+        /// Unknown Reference Type
+        /// </summary>
         Unknown = 0,
+        /// <summary>
+        /// .NET Library
+        /// </summary>
         Library = 1,
+        /// <summary>
+        /// Script Source File
+        /// </summary>
         ScriptFile = 2,
+        /// <summary>
+        /// Compiled Script
+        /// </summary>
         ScriptBinary = 3,
+        /// <summary>
+        /// Invalid Type
+        /// </summary>
         Invalid = int.MaxValue
     }
 }
