@@ -408,7 +408,7 @@ namespace scs
         /// </summary>
         __None = 0,
         /// <summary>
-        /// Script is the Contents of "Main(string[] argc){...}"
+        /// Script is the Contents of "Main(string[] args){...}"
         /// </summary>
         Single = 1,
         /// <summary>
