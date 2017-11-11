@@ -5,7 +5,7 @@ namespace scs
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
 #if DEBUG
             try
@@ -43,6 +43,8 @@ namespace scs
             Console.ResetColor();
             Console.Error.WriteLine("#END");
             Console.ReadKey(true);
+#else
+            return 0;
 #endif
         }
 
