@@ -72,7 +72,7 @@ namespace scs
                         {
                             case LINE_VERSION:
                                 //This is here for forward compatibility
-                                throw new DependencyException(LineNum, SourceFileName, "#version is not supported in this compiler. Check the current script documentation if you need an update.");
+                                throw new DependencyException(LineNum, SourceFileName, "#version is not supported in this compiler. The compiler is outdated if the documentation states that this command is available.");
                             case LINE_MODE:
                                 //This line is ignored when processing References
                                 break;
@@ -140,6 +140,10 @@ namespace scs
                     else if (Command == LINE_REF || Command == LINE_INCLUDE)
                     {
                         throw new DependencyException(LineNum, SourceFileName, "Invalid Include or Reference Line. Missing quotes?");
+                    }
+                    else if (Command == LINE_VERSION)
+                    {
+                        throw new DependencyException(LineNum, SourceFileName, "Invalid version Line. Missing quotes?");
                     }
                 }
             }
