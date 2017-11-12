@@ -42,6 +42,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Examples\Forms\drawing.cs" />
+    <None Include="Examples\Forms\ImageTools.cs" />
+    <None Include="Examples\SimpleTest\test.cs" />
+    <None Include="Examples\SimpleTest\test.include.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
