@@ -158,3 +158,9 @@ It's used for compatibility between engines and scripts.
 - [ ] Implement `//#version`
 - [ ] Build a Library
 - [ ] More Documentation than just the readme file.
+
+# Engine Settings Overview
+
+- **.NET Version of Engine and Scripts**: 4.5
+- **Default References**: `mscorlib.dll`, `System.dll`
+- **Default Script Mode**: single
