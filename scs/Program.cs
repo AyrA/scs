@@ -10,7 +10,7 @@ namespace scs
         static int Main(string[] args)
         {
 #if DEBUG
-            args = @"C:\temp\test.cs A B C D".Split(' ');
+            args = @"C:\temp\drawing.cs".Split(' ');
 #endif
             string[] HelpArgs = "/?,-?,--help".Split(',');
             if (args.Length == 0 || args.Any(m => HelpArgs.Contains(m.ToLower())))
@@ -37,6 +37,7 @@ namespace scs
             }
             Console.ResetColor();
 #if DEBUG
+            Console.Error.WriteLine("#END");
             Console.ReadKey(true);
 #endif
             return 0;
