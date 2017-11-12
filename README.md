@@ -164,3 +164,4 @@ It's used for compatibility between engines and scripts.
 - **.NET Version of Engine and Scripts**: 4.5
 - **Default References**: `mscorlib.dll`, `System.dll`
 - **Default Script Mode**: single
+- **Compiler #version**: Not supported
