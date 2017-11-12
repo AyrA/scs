@@ -138,9 +138,28 @@ namespace scs
                 switch (Args[i].ToLower())
                 {
                     case "/c":
+                        if (C.Compile)
+                        {
+                            Console.Error.WriteLine("Duplicate /c Argument");
+                            return C;
+                        }
+                        C.Compile = true;
                         if (i < Args.Length - 1)
                         {
-                            C.OutputFile = Args[++i];
+                            if (string.IsNullOrEmpty(C.OutputFile))
+                            {
+                                C.OutputFile = Args[++i];
+                            }
+                            else
+                            {
+                                Console.Error.WriteLine("/c Argument can't be last because it requires a file name parameter.");
+                                return C;
+                            }
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine("/c Argument requires a file name parameter");
+                            return C;
                         }
                         break;
                     default:
@@ -164,22 +183,6 @@ namespace scs
             {
                 Console.Error.WriteLine("Script File Argument is missing");
                 return C;
-            }
-            //Special checks if /c is supplied
-            if (C.Compile)
-            {
-                //Compilation and script arguments are mutually exclusive
-                if (C.ScriptArgs.Length > 0)
-                {
-                    Console.Error.WriteLine("/c can't be used in combination with script arguments");
-                    return C;
-                }
-                //Compilation requires an output file name
-                else if (C.OutputFile == null)
-                {
-                    Console.Error.WriteLine("/c requires an output file name");
-                    return C;
-                }
             }
             //Here it is considered valid
             C.Valid = true;
