@@ -77,9 +77,9 @@ The header is not removed from the file before compiling.
 
 ## Valid Header Line
 
-A Header line is considered Valid if it matches one of the conditions below:
+A Header line is considered valid if it matches one of the conditions below:
 
-- Single line comment (`//`); There is no support for `/**/` yet
+- Single line comment (`//`) that is not a header directive. There is no support for `/**/` yet
 - Empty Line
 - Line with only Whitespace
 - Line Starting with A header directive (`//#include`, `//#rev`, `//#mode`, `//#version`)
@@ -102,7 +102,7 @@ Formats:
 
 This is similar to a C style include with these differences:
 
-- Can be used for compiled scripts
+- Can be used for compiled scripts, there is no different command for linking binaries
 - A specific file is only ever included once
 - It can only be used in the script header
 
@@ -111,7 +111,12 @@ if the file is a binary, it will be added to the list of references.
 
 Using quotes will resolve the path relative to the currently processed script,
 using brackets will resolve the path relative to `scs.Tools.ReferencePath`,
-as of now this is a subfolder of the engine called "Lib"
+as of now this is a subfolder of the engine called "Lib".
+
+`Engine.dll` is included by default and gives your Script the Ability to use the Compiler.
+
+**There are no libraries we ship by default. If you know a good library,
+feel free to open an Issue for it**
 
 ### ref
 
@@ -126,6 +131,8 @@ Internally it works identical to `#include` with a binary file,
 but it doesn't treats the path as being relative to the script file.
 
 `System.dll` and `mscorlib.dll` are referenced by default.
+
+**If you feel that other Libraries should be referenced by default, open an issue**
 
 ### mode
 
@@ -149,3 +156,5 @@ It's used for compatibility between engines and scripts.
 - [ ] SCS is theoretically only a temporary name. `csc` (C# Compiler) is already the name of the real compiler and
 `css` (C# Script) is already a completely different format.
 - [ ] Implement `//#version`
+- [ ] Build a Library
+- [ ] More Documentation than just the readme file.
