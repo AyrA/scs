@@ -375,6 +375,11 @@ namespace scs
         /// <returns>Result Code</returns>
         public static int Run(string ScriptFile, string[] ScriptArguments = null, bool Optimize = true)
         {
+            //Simulates Real Main method Behavior
+            if (ScriptArguments == null)
+            {
+                ScriptArguments = new string[0];
+            }
             var T = GetScriptType(ScriptFile);
             Assembly Script;
             if (T == ScriptDependencyType.ScriptFile)
