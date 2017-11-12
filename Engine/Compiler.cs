@@ -72,7 +72,7 @@ namespace scs
             {
                 ++LineNum;
                 //Ignore empty Lines and simple comments
-                if (!string.IsNullOrEmpty(Line))
+                if (!string.IsNullOrEmpty(Line) && Line.Contains(" "))
                 {
                     var Command = Line.Substring(0, Line.IndexOf(' ')).Trim().ToLower();
                     var BaseFileName = Line.Substring(Line.IndexOf(' ') + 1).Trim();

@@ -10,7 +10,7 @@ namespace scs
         static int Main(string[] args)
         {
 #if DEBUG
-            args = @"C:\temp\drawing.cs".Split(' ');
+            args = @"C:\Projects\scs\scs\Examples\Forms\drawing.cs".Split(' ');
 #endif
             string[] HelpArgs = "/?,-?,--help".Split(',');
             if (args.Length == 0 || args.Any(m => HelpArgs.Contains(m.ToLower())))
