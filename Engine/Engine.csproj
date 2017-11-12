@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="CompilerException.cs" />
     <Compile Include="DependencyException.cs" />
+    <Compile Include="ScriptException.cs" />
     <Compile Include="TempFileHandler.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Compiler.cs" />

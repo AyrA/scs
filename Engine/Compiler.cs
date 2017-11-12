@@ -346,7 +346,7 @@ namespace scs
             compilerParams.CompilerOptions = "/target:library" + (Optimize ? " /optimize" : "");
             compilerParams.GenerateExecutable = true;
             compilerParams.GenerateInMemory = false;
-            compilerParams.IncludeDebugInformation = false;
+            compilerParams.IncludeDebugInformation = !Optimize;
             compilerParams.ReferencedAssemblies.Add("mscorlib.dll");
             compilerParams.ReferencedAssemblies.Add("System.dll");
             compilerParams.OutputAssembly = OutFile;
@@ -373,7 +373,7 @@ namespace scs
         /// <param name="ScriptFile">Script file</param>
         /// <param name="ScriptArguments">Arguments to pass to the script</param>
         /// <returns>Result Code</returns>
-        public static int Run(string ScriptFile, string[] ScriptArguments = null)
+        public static int Run(string ScriptFile, string[] ScriptArguments = null, bool Optimize = true)
         {
             var T = GetScriptType(ScriptFile);
             Assembly Script;
@@ -381,7 +381,7 @@ namespace scs
             {
                 using (var TFH = new TempFileHandler())
                 {
-                    Compile(ScriptFile, TFH.TempName);
+                    Compile(ScriptFile, TFH.TempName, Optimize);
                     Script = Assembly.LoadFile(TFH.TempName);
                 }
             }
@@ -406,22 +406,28 @@ namespace scs
                             //Run Method only if no parameters are needed or a single string array is needed.
                             if (Params.Length == 0 || Params[0].ParameterType == typeof(string[]))
                             {
+                                object ret = null;
+                                try
+                                {
+                                    ret = M.Invoke(null, Params.Length == 0 ? null : new object[] { ScriptArguments });
+                                }
+                                catch (TargetInvocationException ex)
+                                {
+                                    //Strip ex because it's unnecessary and confusing for script developers
+                                    throw new ScriptException(ScriptFile, ex.InnerException);
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new ScriptException(ScriptFile, ex);
+                                }
                                 //Run according to return type
-                                if (M.ReturnType == typeof(int))
-                                {
-                                    return (int)M.Invoke(null, Params.Length == 0 ? null : new object[] { ScriptArguments });
-                                }
-                                else
-                                {
-                                    M.Invoke(null, Params.Length == 0 ? null : new object[] { ScriptArguments });
-                                    return 0;
-                                }
+                                return M.ReturnType == typeof(int) ? (int)ret : 0;
                             }
                         }
                     }
                 }
             }
-            return int.MinValue;
+            throw new BadImageFormatException("No suitable method signature found in the given File", ScriptFile);
         }
 
         /// <summary>
