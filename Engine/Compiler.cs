@@ -8,13 +8,31 @@ using System;
 
 namespace scs
 {
+    /// <summary>
+    /// Compiles and Runs Scripts
+    /// </summary>
     public static class Compiler
     {
+        /// <summary>
+        /// Used for Random Identifier Names
+        /// </summary>
         private static Random R = new Random();
 
+        /// <summary>
+        /// Mode Directive
+        /// </summary>
         public const string LINE_MODE = "//#mode";
+        /// <summary>
+        /// .NET Reference Directive
+        /// </summary>
         public const string LINE_REF = "//#ref";
+        /// <summary>
+        /// Script Reference Directive
+        /// </summary>
         public const string LINE_INCLUDE = "//#include";
+        /// <summary>
+        /// Script Version Directive
+        /// </summary>
         public const string LINE_VERSION = "//#version";
 
         /// <summary>
