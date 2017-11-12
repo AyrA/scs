@@ -7,6 +7,11 @@ namespace scs
 {
     class Program
     {
+#if DEBUG
+        public const bool DEBUG = true;
+#else
+        public const bool DEBUG = false;
+#endif
         static int Main(string[] args)
         {
 #if DEBUG
@@ -47,7 +52,13 @@ namespace scs
         {
             try
             {
-                return Compiler.Run(IN, Args.Length > 0 ? Args : null);
+                return Compiler.Run(IN, Args.Length > 0 ? Args : null, !DEBUG);
+            }
+            catch (ScriptException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine("The script {0} caused an Exception", ex.FileName);
+                Console.Error.WriteLine(ex.InnerException);
             }
             catch (AggregateException ex)
             {
@@ -85,7 +96,7 @@ namespace scs
         {
             try
             {
-                var Errors = Compiler.Compile(IN, OUT);
+                var Errors = Compiler.Compile(IN, OUT, !DEBUG);
                 if (Errors != null && Errors.Length > 0)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
