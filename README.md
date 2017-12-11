@@ -130,7 +130,17 @@ Quotes are required and a path should not be supplied.
 Internally it works identical to `#include` with a binary file,
 but it doesn't treats the path as being relative to the script file.
 
-`System.dll` and `mscorlib.dll` are referenced by default.
+#### Assemblies referenced by default
+
+The assemblies below are always referenced and don't need to be added manually:
+
+- `mscorlib.dll`
+- `System.dll`
+- `System.Core.dll`
+- `System.Linq.dll`
+
+**Note:** The assemblies are just referenced in the compiler.
+No `using` directive is inserted into the code automatically.
 
 **If you feel that other Libraries should be referenced by default, open an issue**
 
@@ -162,6 +172,6 @@ It's used for compatibility between engines and scripts.
 # Engine Settings Overview
 
 - **.NET Version of Engine and Scripts**: 4.5
-- **Default References**: `mscorlib.dll`, `System.dll`
+- **Default References**: `mscorlib.dll`, `System.dll`, `System.Core.dll`, `System.Linq.dll`
 - **Default Script Mode**: single
 - **Compiler #version**: Not supported
