@@ -36,11 +36,10 @@ namespace scs
 #if !DEBUG
                         return
 #endif
-                            Run(C.ScriptFile, C.ScriptArgs);
+                        Run(C.ScriptFile, C.ScriptArgs);
                     }
                 }
             }
-            Console.ResetColor();
 #if DEBUG
             Console.Error.WriteLine("#END");
             Console.ReadKey(true);
@@ -50,6 +49,12 @@ namespace scs
 
         private static int Run(string IN, string[] Args)
         {
+            //Save Colors
+            var Colors = new
+            {
+                FG = Console.ForegroundColor,
+                BG = Console.BackgroundColor
+            };
             try
             {
                 return Compiler.Run(IN, Args.Length > 0 ? Args : null, !DEBUG);
@@ -89,6 +94,9 @@ namespace scs
                 Console.Error.WriteLine("Unexpected Error:");
                 Console.Error.WriteLine(ex);
             }
+            //Reset Colors
+            Console.ForegroundColor = Colors.FG;
+            Console.BackgroundColor = Colors.BG;
             return int.MinValue;
         }
 
