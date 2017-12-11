@@ -62,12 +62,14 @@ namespace scs
             catch (ScriptException ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.Error.WriteLine("The script {0} caused an Exception", ex.FileName);
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.Error.WriteLine("The script '{0}' caused an Exception", ex.FileName);
                 Console.Error.WriteLine(ex.InnerException);
             }
             catch (AggregateException ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
+                Console.BackgroundColor = ConsoleColor.Black;
                 Console.WriteLine("Got {0} Errors", ex.InnerExceptions.Count);
                 foreach (var e in ex.InnerExceptions)
                 {
@@ -77,11 +79,13 @@ namespace scs
             catch (IOException ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.Error.WriteLine("File IO Error: {0}", ex.Message);
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.Error.WriteLine("Compiler File IO Error: {0}", ex.Message);
             }
             catch (DependencyException ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
+                Console.BackgroundColor = ConsoleColor.Black;
                 Console.Error.WriteLine("{1}:[{0}] {2}", ex.LineNumber, ex.FileName, ex.Message);
                 if (ex.InnerException != null)
                 {
@@ -91,6 +95,7 @@ namespace scs
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
+                Console.BackgroundColor = ConsoleColor.Black;
                 Console.Error.WriteLine("Unexpected Error:");
                 Console.Error.WriteLine(ex);
             }
