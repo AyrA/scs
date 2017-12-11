@@ -349,6 +349,8 @@ namespace scs
             compilerParams.IncludeDebugInformation = !Optimize;
             compilerParams.ReferencedAssemblies.Add("mscorlib.dll");
             compilerParams.ReferencedAssemblies.Add("System.dll");
+            compilerParams.ReferencedAssemblies.Add("System.Core.dll");
+            compilerParams.ReferencedAssemblies.Add("System.Linq.dll");
             compilerParams.OutputAssembly = OutFile;
             if (References != null && References.Length > 0)
             {
